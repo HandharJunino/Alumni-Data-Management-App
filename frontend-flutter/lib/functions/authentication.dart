@@ -6,20 +6,24 @@ class AuthService {
   static const String baseUrl = "http://127.0.0.1:8000/api/";
   final storage = FlutterSecureStorage();
 
+  Future<http.Response> _post(String path, Map<String, dynamic> body) {
+    return http.post(
+      Uri.parse('$baseUrl$path'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+  }
+
   /// ** Register User with Error Handling **
   Future<String?> registerUser(
       String username, String email, String password, String password2) async {
     try {
-      final response = await http.post(
-        Uri.parse('${baseUrl}register/'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "username": username, // Use email as username
-          "email": email,
-          "password": password,
-          "password2": password2, // Confirm password
-        }),
-      );
+      final response = await _post('register/', {
+        "username": username, // Use email as username
+        "email": email,
+        "password": password,
+        "password2": password2, // Confirm password
+      });
 
       if (response.statusCode == 201) {
         return null; // Registration successful (No error message)
@@ -36,14 +40,10 @@ class AuthService {
   /// ** Login User & Get Token **
   Future<String?> loginUser(String username, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse('${baseUrl}login/'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "username": username,
-          "password": password,
-        }),
-      );
+      final response = await _post('login/', {
+        "username": username,
+        "password": password,
+      });
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -77,13 +77,7 @@ class AuthService {
 
   /// ** Forgot Password **
   Future<String?> forgotPassword(String email) async {
-    final response = await http.post(
-      Uri.parse('${baseUrl}password-reset/'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "email": email,
-      }),
-    );
+    final response = await _post('password-reset/', {"email": email});
 
     if (response.statusCode == 200) {
       return null; // Email sent successfully (No error message)

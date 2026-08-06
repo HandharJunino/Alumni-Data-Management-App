@@ -437,6 +437,52 @@ class OverflowMenuButton extends StatelessWidget {
   }
 }
 
+/// A rounded, drop-shadowed icon button — used for floating back/action
+/// buttons that sit on top of page content (e.g. a profile header).
+class ShadowIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final double size;
+  final double iconSize;
+  final double borderRadius;
+
+  const ShadowIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.size = 40,
+    this.iconSize = 20,
+    this.borderRadius = 12,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 4,
+            color: Color(0x520E151B),
+            offset: Offset(0.0, 2),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.onSurface,
+          size: iconSize,
+        ),
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
 class OverflowMenuItem {
   final IconData icon;
   final String label;

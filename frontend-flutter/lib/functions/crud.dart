@@ -14,81 +14,82 @@ class ApiService {
     };
   }
 
-  // Alumni CRUD Operations old
-  /*Future<List<dynamic>> getAlumniList() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/alumni/'),
-      headers: await _getAuthHeaders(),
-    );
+  Uri _uri(String path, [Map<String, String>? query]) {
+    final uri = Uri.parse('$baseUrl$path');
+    return query == null || query.isEmpty
+        ? uri
+        : uri.replace(queryParameters: query);
+  }
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+  Future<http.Response> _send(
+    String method,
+    String path, {
+    Map<String, String>? query,
+    Object? body,
+  }) async {
+    final uri = _uri(path, query);
+    final headers = await _getAuthHeaders();
+    final encodedBody = body == null ? null : jsonEncode(body);
+    switch (method) {
+      case 'GET':
+        return http.get(uri, headers: headers);
+      case 'POST':
+        return http.post(uri, headers: headers, body: encodedBody);
+      case 'PUT':
+        return http.put(uri, headers: headers, body: encodedBody);
+      case 'DELETE':
+        return http.delete(uri, headers: headers);
+      default:
+        throw ArgumentError('Unsupported method: $method');
     }
-    throw Exception("Failed to load alumni");
-  }*/
+  }
+
+  dynamic _decode(http.Response response) =>
+      response.body.isEmpty ? null : jsonDecode(response.body);
+
+  List<Map<String, dynamic>> _unwrapList(dynamic decoded) {
+    if (decoded is Map && decoded.containsKey('results')) {
+      // Paginated response
+      return List<Map<String, dynamic>>.from(decoded['results']);
+    } else if (decoded is List) {
+      return List<Map<String, dynamic>>.from(decoded);
+    }
+    throw Exception('Unexpected response format: ${decoded.runtimeType}');
+  }
 
   Future<Map<String, dynamic>> createAlumni(
       Map<String, dynamic> alumniData) async {
-    try {
-      print('Creating alumni with data: $alumniData'); // Debug print
+    final response = await _send('POST', '/alumni/', body: alumniData);
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/alumni/'),
-        headers: await _getAuthHeaders(),
-        body: jsonEncode(alumniData),
-      );
-
-      print('Response status: ${response.statusCode}'); // Debug print
-      print('Response body: ${response.body}'); // Debug print
-
-      if (response.statusCode == 201) {
-        final decodedResponse = jsonDecode(response.body);
-        if (decodedResponse is Map<String, dynamic>) {
-          // Return the whole response if there's no 'data' key
-          return decodedResponse.containsKey('data')
-              ? decodedResponse['data']
-              : decodedResponse;
-        }
-        throw Exception('Invalid response format');
+    if (response.statusCode == 201) {
+      final decoded = _decode(response);
+      if (decoded is Map<String, dynamic>) {
+        return decoded.containsKey('data') ? decoded['data'] : decoded;
       }
+      throw Exception('Invalid response format');
+    }
 
-      // Handle specific error cases
-      switch (response.statusCode) {
-        case 400:
-          throw Exception('Invalid data: ${response.body}');
-        case 401:
-          throw Exception('Unauthorized: Please log in again');
-        case 403:
-          throw Exception('Permission denied');
-        default:
-          throw Exception('Failed to create alumni: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error creating alumni: $e'); // Debug print
-      throw Exception('Failed to create alumni: $e');
+    switch (response.statusCode) {
+      case 400:
+        throw Exception('Invalid data: ${response.body}');
+      case 401:
+        throw Exception('Unauthorized: Please log in again');
+      case 403:
+        throw Exception('Permission denied');
+      default:
+        throw Exception('Failed to create alumni: ${response.statusCode}');
     }
   }
 
   Future<Map<String, dynamic>> updateAlumni(
       int id, Map<String, dynamic> alumniData) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/alumni/$id/'),
-      headers: await _getAuthHeaders(),
-      body: jsonEncode(alumniData),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body)['data'];
-    }
+    final response = await _send('PUT', '/alumni/$id/', body: alumniData);
+    if (response.statusCode == 200) return _decode(response)['data'];
     throw Exception("Failed to update alumni");
   }
 
   Future<void> deleteAlumni(int id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/alumni/$id/'),
-      headers: await _getAuthHeaders(),
-    );
-
+    final response = await _send('DELETE', '/alumni/$id/');
     if (response.statusCode != 204) {
       throw Exception("Failed to delete alumni");
     }
@@ -96,41 +97,27 @@ class ApiService {
 
   // Previous Contacts Operations
   Future<List<dynamic>> getPreviousContacts() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/previous-contacts/'),
-      headers: await _getAuthHeaders(),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    }
+    final response = await _send('GET', '/previous-contacts/');
+    if (response.statusCode == 200) return _decode(response);
     throw Exception("Failed to load contacts");
   }
 
   Future<Map<String, dynamic>> createContact(
       Map<String, dynamic> contactData) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/previous-contacts/'),
-      headers: await _getAuthHeaders(),
-      body: jsonEncode(contactData),
-    );
-
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body);
-    }
+    final response =
+        await _send('POST', '/previous-contacts/', body: contactData);
+    if (response.statusCode == 201) return _decode(response);
     throw Exception("Failed to create contact");
   }
 
   // Recommended Alumni Operations
   Future<List<dynamic>> getRecommendedAlumni(int eventId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/recommended-alumni/?event_id=$eventId'),
-      headers: await _getAuthHeaders(),
+    final response = await _send(
+      'GET',
+      '/recommended-alumni/',
+      query: {'event_id': '$eventId'},
     );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    }
+    if (response.statusCode == 200) return _decode(response);
     throw Exception("Failed to load recommended alumni");
   }
 
@@ -140,52 +127,20 @@ class ApiService {
     Map<String, String>? filters,
     String? ordering,
   }) async {
-    // Build query parameters
-    final queryParams = <String, String>{};
-    if (search != null) queryParams['search'] = search;
-    if (ordering != null) queryParams['ordering'] = ordering;
-    if (filters != null) queryParams.addAll(filters);
-
-    final uri =
-        Uri.parse('$baseUrl/alumni/').replace(queryParameters: queryParams);
-
-    final response = await http.get(
-      uri,
-      headers: await _getAuthHeaders(),
-    );
-
-    if (response.statusCode == 200) {
-      final dynamic decodedResponse = jsonDecode(response.body);
-
-      if (decodedResponse is Map && decodedResponse.containsKey('results')) {
-        // Handle paginated response
-        return List<Map<String, dynamic>>.from(decodedResponse['results']);
-      } else if (decodedResponse is List) {
-        // Handle direct list response
-        return List<Map<String, dynamic>>.from(decodedResponse);
-      } else {
-        throw Exception(
-            'Unexpected response format: ${decodedResponse.runtimeType}');
-      }
-    }
+    final query = <String, String>{
+      if (search != null) 'search': search,
+      if (ordering != null) 'ordering': ordering,
+      ...?filters,
+    };
+    final response = await _send('GET', '/alumni/', query: query);
+    if (response.statusCode == 200) return _unwrapList(_decode(response));
     throw Exception("Failed to load alumni");
   }
 
   Future<Map<String, dynamic>> getUserDetails(String userId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/alumni/$userId'),
-        headers: await _getAuthHeaders(),
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Failed to load user details');
-      }
-    } catch (e) {
-      throw Exception('Error fetching user details: $e');
-    }
+    final response = await _send('GET', '/alumni/$userId');
+    if (response.statusCode == 200) return _decode(response);
+    throw Exception('Failed to load user details');
   }
 
   // event CRUD Operations
@@ -194,64 +149,28 @@ class ApiService {
     Map<String, String>? filters,
     String? ordering,
   }) async {
-    // Build query parameters
-    final queryParams = <String, String>{};
-    if (search != null) queryParams['search'] = search;
-    if (ordering != null) queryParams['ordering'] = ordering;
-    if (filters != null) queryParams.addAll(filters);
-
-    final uri =
-        Uri.parse('$baseUrl/events/').replace(queryParameters: queryParams);
-
-    final response = await http.get(
-      uri,
-      headers: await _getAuthHeaders(),
-    );
-
-    if (response.statusCode == 200) {
-      final dynamic decodedResponse = jsonDecode(response.body);
-
-      if (decodedResponse is Map && decodedResponse.containsKey('results')) {
-        // Handle paginated response
-        return List<Map<String, dynamic>>.from(decodedResponse['results']);
-      } else if (decodedResponse is List) {
-        // Handle direct list response
-        return List<Map<String, dynamic>>.from(decodedResponse);
-      } else {
-        throw Exception(
-            'Unexpected response format: ${decodedResponse.runtimeType}');
-      }
-    }
+    final query = <String, String>{
+      if (search != null) 'search': search,
+      if (ordering != null) 'ordering': ordering,
+      ...?filters,
+    };
+    final response = await _send('GET', '/events/', query: query);
+    if (response.statusCode == 200) return _unwrapList(_decode(response));
     throw Exception("Failed to load events");
   }
 
   // Create a new event
   Future<Map<String, dynamic>> createEvent(
       Map<String, dynamic> eventData) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/events/'),
-      headers: await _getAuthHeaders(),
-      body: jsonEncode(eventData),
-    );
-
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Failed to create event: ${response.body}");
-    }
+    final response = await _send('POST', '/events/', body: eventData);
+    if (response.statusCode == 201) return _decode(response);
+    throw Exception("Failed to create event: ${response.body}");
   }
 
   // Get details of a specific event
   Future<Map<String, dynamic>> getEventDetails(int eventId) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/events/$eventId/'),
-      headers: await _getAuthHeaders(),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception("Failed to load event details");
-    }
+    final response = await _send('GET', '/events/$eventId/');
+    if (response.statusCode == 200) return _decode(response);
+    throw Exception("Failed to load event details");
   }
 }

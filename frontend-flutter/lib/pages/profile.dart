@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:alumni_app/models/profile_model.dart';
 import 'package:alumni_app/animations.dart';
 import 'package:alumni_app/functions/crud.dart';
+import 'package:alumni_app/components.dart';
 
 class UserProfileWidget extends StatefulWidget {
   final userId;
@@ -118,55 +119,17 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 4,
-                              color: Color(0x520E151B),
-                              offset: Offset(0.0, 2),
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.arrow_back_rounded,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
+                      ShadowIconButton(
+                        icon: Icons.arrow_back_rounded,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 4,
-                              color: Color(0x520E151B),
-                              offset: Offset(0.0, 2),
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/edit_profile');
-                          },
-                        ),
+                      ShadowIconButton(
+                        icon: Icons.edit,
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/edit_profile');
+                        },
                       ),
                     ],
                   ),
