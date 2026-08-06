@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:alumni_app/models/auth_model.dart';
 import 'package:alumni_app/functions/authentication.dart';
+import 'package:alumni_app/components.dart';
 
 class AuthPageWidget extends StatefulWidget {
   const AuthPageWidget({super.key});
@@ -171,131 +172,49 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                   ),
             ),
             const SizedBox(height: 24),
-            TextFormField(
+            CustomTextFormField(
               controller: _model.emailAddressTextController,
               focusNode: _model.emailAddressFocusNode,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Outfit',
-                      letterSpacing: 0.0,
-                    ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-              ),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'Plus Jakarta Sans',
-                    letterSpacing: 0.0,
-                  ),
+              labelText: 'Email',
+              borderRadius: 40,
+              borderColor: Theme.of(context).colorScheme.outline,
+              contentPadding: const EdgeInsets.all(24),
               keyboardType: TextInputType.emailAddress,
               validator: _model.emailAddressTextControllerValidator,
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            CustomTextFormField(
               controller: _model.passwordTextController,
               focusNode: _model.passwordFocusNode,
+              labelText: 'Password',
+              borderRadius: 40,
+              borderColor: Theme.of(context).colorScheme.outline,
+              contentPadding: const EdgeInsets.all(24),
               obscureText: !_model.passwordVisibility,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Outfit',
-                      letterSpacing: 0.0,
-                    ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _model.passwordVisibility
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _model.passwordVisibility = !_model.passwordVisibility;
-                    });
-                  },
-                ),
-              ),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'Plus Jakarta Sans',
-                    letterSpacing: 0.0,
-                  ),
               validator: _model.passwordTextControllerValidator,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _model.passwordVisibility
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _model.passwordVisibility = !_model.passwordVisibility;
+                  });
+                },
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 if (_model.emailAddressTextController.text.isEmpty ||
                     _model.passwordTextController.text.isEmpty) {
-                  // Show an error message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Please enter both email and password"),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  AppSnackBar.show(
+                      context, 'Please enter both email and password',
+                      isError: true);
                   return; // Stop execution if fields are empty
                 }
 
@@ -306,26 +225,18 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                     _model.passwordTextController.text,
                   );
 
+                  if (!mounted) return;
                   if (error == null) {
                     // Login successful, navigate to home
                     Navigator.pushNamed(context, '/home');
                   } else {
-                    // Show error message from API response
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(error),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                    AppSnackBar.show(context, error, isError: true);
                   }
                 } catch (e) {
-                  // Handle any exceptions that occur during the login process
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("An error occurred: ${e.toString()}"),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  if (!mounted) return;
+                  AppSnackBar.show(
+                      context, 'An error occurred: ${e.toString()}',
+                      isError: true);
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -349,58 +260,45 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (context) {
+                  builder: (dialogContext) {
                     TextEditingController emailController =
                         TextEditingController();
-                    return AlertDialog(
-                      title: Text("Forgot Password"),
-                      content: TextField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          labelText: "Enter your email",
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Close the dialog
-                          },
-                          child: Text("Cancel"),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            if (emailController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Please enter your email"),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            }
-
-                            // Send forgot password request
-                            bool success = await _authService
-                                    .forgotPassword(emailController.text) ==
-                                null;
-
-                            Navigator.pop(context); // Close the dialog
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(success
-                                    ? "Password reset link sent to your email"
-                                    : "Email not found"),
-                                backgroundColor:
-                                    success ? Colors.green : Colors.red,
-                              ),
-                            );
-                          },
-                          child: Text("Submit"),
+                    return FormDialog(
+                      title: 'Forgot Password',
+                      submitText: 'Submit',
+                      fields: [
+                        CustomTextFormField(
+                          controller: emailController,
+                          labelText: 'Enter your email',
+                          keyboardType: TextInputType.emailAddress,
                         ),
                       ],
+                      onSubmit: () async {
+                        if (emailController.text.isEmpty) {
+                          AppSnackBar.show(
+                              dialogContext, 'Please enter your email',
+                              isError: true);
+                          return;
+                        }
+
+                        // Send forgot password request
+                        bool success = await _authService
+                                .forgotPassword(emailController.text) ==
+                            null;
+
+                        if (!dialogContext.mounted) return;
+                        Navigator.pop(dialogContext);
+
+                        if (!mounted) return;
+                        AppSnackBar.show(
+                          context,
+                          success
+                              ? 'Password reset link sent to your email'
+                              : 'Email not found',
+                          isSuccess: success,
+                          isError: !success,
+                        );
+                      },
                     );
                   },
                 );
@@ -435,277 +333,107 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                   ),
             ),
             const SizedBox(height: 24),
-            TextFormField(
+            CustomTextFormField(
               controller: _model.userNameTextController,
               focusNode: _model.userNameFocusNode,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Outfit',
-                      letterSpacing: 0.0,
-                    ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-              ),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'Plus Jakarta Sans',
-                    letterSpacing: 0.0,
-                  ),
+              labelText: 'Username',
+              borderRadius: 40,
+              borderColor: Theme.of(context).colorScheme.outline,
+              contentPadding: const EdgeInsets.all(24),
               keyboardType: TextInputType.name,
               validator: _model.userNameTextControllerValidator,
             ),
             const SizedBox(height: 24),
-            TextFormField(
+            CustomTextFormField(
               controller: _model.emailAddressCreateTextController,
               focusNode: _model.emailAddressCreateFocusNode,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Outfit',
-                      letterSpacing: 0.0,
-                    ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-              ),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'Plus Jakarta Sans',
-                    letterSpacing: 0.0,
-                  ),
+              labelText: 'Email',
+              borderRadius: 40,
+              borderColor: Theme.of(context).colorScheme.outline,
+              contentPadding: const EdgeInsets.all(24),
               keyboardType: TextInputType.emailAddress,
               validator: _model.emailAddressCreateTextControllerValidator,
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            CustomTextFormField(
               controller: _model.passwordCreateTextController,
               focusNode: _model.passwordCreateFocusNode,
+              labelText: 'Password',
+              borderRadius: 40,
+              borderColor: Theme.of(context).colorScheme.outline,
+              contentPadding: const EdgeInsets.all(24),
               obscureText: !_model.passwordCreateVisibility,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Outfit',
-                      letterSpacing: 0.0,
-                    ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _model.passwordCreateVisibility
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _model.passwordCreateVisibility =
-                          !_model.passwordCreateVisibility;
-                    });
-                  },
-                ),
-              ),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'Plus Jakarta Sans',
-                    letterSpacing: 0.0,
-                  ),
               validator: _model.passwordCreateTextControllerValidator,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _model.passwordCreateVisibility
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _model.passwordCreateVisibility =
+                        !_model.passwordCreateVisibility;
+                  });
+                },
+              ),
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            CustomTextFormField(
               controller: _model.passwordConfirmTextController,
               focusNode: _model.passwordConfirmFocusNode,
+              labelText: 'Confirm Password',
+              borderRadius: 40,
+              borderColor: Theme.of(context).colorScheme.outline,
+              contentPadding: const EdgeInsets.all(24),
               obscureText: !_model.passwordConfirmVisibility,
-              decoration: InputDecoration(
-                labelText: 'Confirm Password',
-                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Outfit',
-                      letterSpacing: 0.0,
-                    ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.error,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _model.passwordConfirmVisibility
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _model.passwordConfirmVisibility =
-                          !_model.passwordConfirmVisibility;
-                    });
-                  },
-                ),
-              ),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'Plus Jakarta Sans',
-                    letterSpacing: 0.0,
-                  ),
               validator: _model.passwordConfirmTextControllerValidator,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _model.passwordConfirmVisibility
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _model.passwordConfirmVisibility =
+                        !_model.passwordConfirmVisibility;
+                  });
+                },
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 if (_model.userNameTextController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Username cannot be empty!'),
-                    ),
-                  );
+                  AppSnackBar.show(context, 'Username cannot be empty!',
+                      isError: true);
                   return;
                 }
                 if (_model.emailAddressCreateTextController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Email cannot be empty!'),
-                    ),
-                  );
+                  AppSnackBar.show(context, 'Email cannot be empty!',
+                      isError: true);
                   return;
                 }
                 if (_model.passwordCreateTextController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Password cannot be empty!'),
-                    ),
-                  );
+                  AppSnackBar.show(context, 'Password cannot be empty!',
+                      isError: true);
                   return;
                 }
                 if (_model.passwordConfirmTextController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Confirm Password cannot be empty!'),
-                    ),
-                  );
+                  AppSnackBar.show(
+                      context, 'Confirm Password cannot be empty!',
+                      isError: true);
                   return;
                 }
                 if (_model.passwordCreateTextController.text !=
                     _model.passwordConfirmTextController.text) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Passwords don\'t match!'),
-                    ),
-                  );
+                  AppSnackBar.show(context, 'Passwords don\'t match!',
+                      isError: true);
                   return;
                 }
                 try {
@@ -715,21 +443,15 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                     _model.passwordCreateTextController.text,
                     _model.passwordConfirmTextController.text,
                   );
+                  if (!mounted) return;
                   if (errorMessage == null) {
                     Navigator.pushNamed(context, '/home');
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(errorMessage),
-                      ),
-                    );
+                    AppSnackBar.show(context, errorMessage, isError: true);
                   }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString()),
-                    ),
-                  );
+                  if (!mounted) return;
+                  AppSnackBar.show(context, e.toString(), isError: true);
                 }
               },
               style: ElevatedButton.styleFrom(

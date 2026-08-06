@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../components.dart';
 
 class AlumniListItem extends StatelessWidget {
   final Map<String, dynamic> alumni;
@@ -16,23 +17,11 @@ class AlumniListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
-      child: Container(
+      child: AppCard(
         width: double.infinity,
         height: 60,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary,
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 4,
-              color: Color(0x32000000),
-              offset: Offset(0.0, 2),
-            ),
-          ],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 8, 0),
-          child: Row(
+        padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 8, 0),
+        child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -107,7 +96,6 @@ class AlumniListItem extends StatelessWidget {
               ),
             ],
           ),
-        ),
       ),
     );
   }

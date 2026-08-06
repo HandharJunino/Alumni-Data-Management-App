@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:alumni_app/models/edit_profile_model.dart';
 export 'package:alumni_app/models/edit_profile_model.dart';
 import 'package:alumni_app/functions/crud.dart';
+import 'package:alumni_app/components.dart';
 
 class EditProfileWidget extends StatefulWidget {
   final String userId;
@@ -46,9 +47,8 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
         _isLoading = false;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading user data: $e')),
-      );
+      if (!mounted) return;
+      AppSnackBar.show(context, 'Error loading user data: $e', isError: true);
       _isLoading = false;
     }
   }
@@ -168,286 +168,91 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 16),
-                child: TextFormField(
+                child: CustomTextFormField(
                   controller: _model.yourNameTextController,
                   focusNode: _model.yourNameFocusNode,
                   textCapitalization: TextCapitalization.words,
-                  obscureText: false,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                    labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.secondary,
-                    contentPadding:
-                        const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
-                  ),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontFamily: 'Plus Jakarta Sans',
+                  labelText: 'Name',
+                  labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Outfit',
                         letterSpacing: 0.0,
                       ),
+                  fillColor: Theme.of(context).colorScheme.secondary,
+                  borderColor: Theme.of(context).colorScheme.tertiary,
+                  contentPadding:
+                      const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
                   validator: _model.yourNameTextControllerValidator,
                 ),
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 16),
-                child: TextFormField(
+                child: CustomTextFormField(
                   controller: _model.cityTextController,
                   focusNode: _model.cityFocusNode,
                   textCapitalization: TextCapitalization.words,
-                  obscureText: false,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.secondary,
-                    contentPadding:
-                        const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
-                  ),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontFamily: 'Plus Jakarta Sans',
+                  labelText: 'Email',
+                  labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Outfit',
                         letterSpacing: 0.0,
                       ),
+                  fillColor: Theme.of(context).colorScheme.secondary,
+                  borderColor: Theme.of(context).colorScheme.tertiary,
+                  contentPadding:
+                      const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
                   validator: _model.cityTextControllerValidator,
                 ),
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 16),
-                child: TextFormField(
+                child: CustomTextFormField(
                   controller: _model.cityTextController,
                   focusNode: _model.cityFocusNode,
                   textCapitalization: TextCapitalization.words,
-                  obscureText: false,
-                  decoration: InputDecoration(
-                    labelText: 'Time of Contact from',
-                    labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.secondary,
-                    contentPadding:
-                        const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
-                  ),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontFamily: 'Plus Jakarta Sans',
+                  labelText: 'Time of Contact from',
+                  labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Outfit',
                         letterSpacing: 0.0,
                       ),
+                  fillColor: Theme.of(context).colorScheme.secondary,
+                  borderColor: Theme.of(context).colorScheme.tertiary,
+                  contentPadding:
+                      const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
                   validator: _model.cityTextControllerValidator,
                 ),
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 16),
-                child: TextFormField(
+                child: CustomTextFormField(
                   controller: _model.cityTextController,
                   focusNode: _model.cityFocusNode,
                   textCapitalization: TextCapitalization.words,
-                  obscureText: false,
-                  decoration: InputDecoration(
-                    labelText: 'Time of Contact to',
-                    labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.secondary,
-                    contentPadding:
-                        const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
-                  ),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontFamily: 'Plus Jakarta Sans',
+                  labelText: 'Time of Contact to',
+                  labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Outfit',
                         letterSpacing: 0.0,
                       ),
+                  fillColor: Theme.of(context).colorScheme.secondary,
+                  borderColor: Theme.of(context).colorScheme.tertiary,
+                  contentPadding:
+                      const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
                   validator: _model.cityTextControllerValidator,
                 ),
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 12),
-                child: TextFormField(
+                child: CustomTextFormField(
                   controller: _model.myBioTextController,
                   focusNode: _model.myBioFocusNode,
                   textCapitalization: TextCapitalization.sentences,
-                  obscureText: false,
-                  decoration: InputDecoration(
-                    labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    hintText: 'Area of Expertise',
-                    hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.secondary,
-                    contentPadding:
-                        const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
-                  ),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontFamily: 'Plus Jakarta Sans',
+                  hintText: 'Area of Expertise',
+                  labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontFamily: 'Outfit',
                         letterSpacing: 0.0,
                       ),
+                  fillColor: Theme.of(context).colorScheme.secondary,
+                  borderColor: Theme.of(context).colorScheme.tertiary,
+                  contentPadding:
+                      const EdgeInsetsDirectional.fromSTEB(20, 24, 0, 24),
                   textAlign: TextAlign.start,
                   maxLines: 3,
                   validator: _model.myBioTextControllerValidator,
