@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'authentication.dart';
 
 class ApiService {
-  static const String baseUrl = "http://127.0.0.1:8000/api";
+  static const String baseUrl = "https://alumni-data-management-app.onrender.com/api";
   final http.Client _client;
   final Future<String?> Function() _getToken;
 
