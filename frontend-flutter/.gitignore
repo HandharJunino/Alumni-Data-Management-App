@@ -31,7 +31,10 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+/build/*
+# Netlify serves straight from this directory in git, so it's the one
+# build output that isn't ignored - see .github/workflows/frontend-ci.yml
+!/build/web/
 
 # Symbolication related
 app.*.symbols

@@ -15,6 +15,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: frontend-flutter
@@ -36,3 +38,17 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+      - name: Build web
+        if: github.event_name == 'push'
+        run: flutter build web --release
+
+      - name: Commit web build
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f build/web
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: update web build [skip ci]"
+          git push
