@@ -4,10 +4,15 @@ import 'authentication.dart';
 
 class ApiService {
   static const String baseUrl = "http://127.0.0.1:8000/api";
-  final AuthService authService = AuthService();
+  final http.Client _client;
+  final Future<String?> Function() _getToken;
+
+  ApiService({http.Client? client, Future<String?> Function()? getToken})
+      : _client = client ?? http.Client(),
+        _getToken = getToken ?? AuthService().getToken;
 
   Future<Map<String, String>> _getAuthHeaders() async {
-    String? token = await authService.getToken();
+    String? token = await _getToken();
     return {
       "Content-Type": "application/json",
       "Authorization": "Bearer $token",
@@ -32,13 +37,13 @@ class ApiService {
     final encodedBody = body == null ? null : jsonEncode(body);
     switch (method) {
       case 'GET':
-        return http.get(uri, headers: headers);
+        return _client.get(uri, headers: headers);
       case 'POST':
-        return http.post(uri, headers: headers, body: encodedBody);
+        return _client.post(uri, headers: headers, body: encodedBody);
       case 'PUT':
-        return http.put(uri, headers: headers, body: encodedBody);
+        return _client.put(uri, headers: headers, body: encodedBody);
       case 'DELETE':
-        return http.delete(uri, headers: headers);
+        return _client.delete(uri, headers: headers);
       default:
         throw ArgumentError('Unsupported method: $method');
     }

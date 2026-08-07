@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:alumni_app/pages/auth.dart'; // Import your AuthPageWidget
-import 'package:mockito/mockito.dart';
+import 'package:alumni_app/pages/auth.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:alumni_app/functions/authentication.dart';
 
 class MockAuthService extends Mock implements AuthService {}
+
+Widget wrapWithApp(Widget child) {
+  return MaterialApp(
+    home: child,
+    routes: {
+      '/home': (context) => const Scaffold(body: Text('Home')),
+    },
+  );
+}
 
 void main() {
   late MockAuthService mockAuthService;
@@ -16,14 +25,12 @@ void main() {
   testWidgets('AuthPageWidget displays sign-in form and handles login',
       (WidgetTester tester) async {
     // Mock successful login
-    when(mockAuthService.loginUser('test@example.com', 'password123'))
+    when(() => mockAuthService.loginUser('test@example.com', 'password123'))
         .thenAnswer((_) async => null);
 
-    // Build the AuthPageWidget
+    // Build the AuthPageWidget with the mock injected
     await tester.pumpWidget(
-      MaterialApp(
-        home: AuthPageWidget(),
-      ),
+      wrapWithApp(AuthPageWidget(authService: mockAuthService)),
     );
 
     // Verify that the sign-in form is displayed
@@ -38,27 +45,28 @@ void main() {
 
     // Tap the "Sign In" button
     await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    // Verify that no error message is displayed
+    // Verify that no error message is displayed and login was called
     expect(find.text('Please enter both email and password'), findsNothing);
+    verify(() =>
+            mockAuthService.loginUser('test@example.com', 'password123'))
+        .called(1);
   });
 
   testWidgets('AuthPageWidget displays sign-up form and handles registration',
       (WidgetTester tester) async {
     // Mock successful registration
-    when(mockAuthService.registerUser(
-      'testuser',
-      'test@example.com',
-      'password123',
-      'password123',
-    )).thenAnswer((_) async => null);
+    when(() => mockAuthService.registerUser(
+          'testuser',
+          'test@example.com',
+          'password123',
+          'password123',
+        )).thenAnswer((_) async => null);
 
-    // Build the AuthPageWidget
+    // Build the AuthPageWidget with the mock injected
     await tester.pumpWidget(
-      MaterialApp(
-        home: AuthPageWidget(),
-      ),
+      wrapWithApp(AuthPageWidget(authService: mockAuthService)),
     );
 
     // Switch to the "Sign Up" tab
@@ -81,9 +89,15 @@ void main() {
 
     // Tap the "Create Account" button
     await tester.tap(find.widgetWithText(ElevatedButton, 'Create Account'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    // Verify that no error message is displayed
+    // Verify that no error message is displayed and registration was called
     expect(find.text('Passwords don\'t match!'), findsNothing);
+    verify(() => mockAuthService.registerUser(
+          'testuser',
+          'test@example.com',
+          'password123',
+          'password123',
+        )).called(1);
   });
 }

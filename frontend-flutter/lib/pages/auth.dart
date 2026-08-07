@@ -4,7 +4,8 @@ import 'package:alumni_app/functions/authentication.dart';
 import 'package:alumni_app/components.dart';
 
 class AuthPageWidget extends StatefulWidget {
-  const AuthPageWidget({super.key});
+  final AuthService? authService;
+  const AuthPageWidget({super.key, this.authService});
 
   @override
   State<AuthPageWidget> createState() => _AuthPageWidgetState();
@@ -13,11 +14,12 @@ class AuthPageWidget extends StatefulWidget {
 class _AuthPageWidgetState extends State<AuthPageWidget>
     with TickerProviderStateMixin {
   late AuthPageModel _model;
-  final AuthService _authService = AuthService();
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
+    _authService = widget.authService ?? AuthService();
     _model = AuthPageModel(vsync: this);
     _model.initState(context);
   }

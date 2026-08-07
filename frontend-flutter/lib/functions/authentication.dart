@@ -4,10 +4,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   static const String baseUrl = "http://127.0.0.1:8000/api/";
-  final storage = FlutterSecureStorage();
+  final http.Client _client;
+  final FlutterSecureStorage storage;
+
+  AuthService({http.Client? client, FlutterSecureStorage? storage})
+      : _client = client ?? http.Client(),
+        storage = storage ?? const FlutterSecureStorage();
 
   Future<http.Response> _post(String path, Map<String, dynamic> body) {
-    return http.post(
+    return _client.post(
       Uri.parse('$baseUrl$path'),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(body),
@@ -86,33 +91,4 @@ class AuthService {
       return data['error'] ?? "Failed to send email!";
     }
   }
-}
-
-class TestableAuthService extends AuthService {
-  Future<http.Response> post(Uri url,
-      {Map<String, String>? headers, Object? body}) {
-    // Implement mock behavior here
-    return mockPostHandler(url, headers: headers, body: body);
-  }
-
-  static Future<http.Response> Function(
-    Uri url, {
-    Map<String, String>? headers,
-    Object? body,
-  }) mockPostHandler =
-      (Uri url, {Map<String, String>? headers, Object? body}) async {
-    // Default implementation forwards to real service
-    return http.Client().post(url, headers: headers, body: body);
-  };
-
-  Future<void> writeSecureStorage(String key, String value) async {
-    // Implement mock storage here
-    return mockStorageWriter(key, value);
-  }
-
-  static Future<void> Function(String key, String value) mockStorageWriter =
-      (String key, String value) async {
-    // Default implementation uses real storage
-    return const FlutterSecureStorage().write(key: key, value: value);
-  };
 }

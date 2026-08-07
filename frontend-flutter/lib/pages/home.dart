@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:alumni_app/theme_notifier.dart';
 
 class HomePageWidget extends StatefulWidget {
-  const HomePageWidget({super.key});
+  final ApiService? apiService;
+  final AuthService? authService;
+  const HomePageWidget({super.key, this.apiService, this.authService});
 
   @override
   State<HomePageWidget> createState() => _HomePageWidgetState();
@@ -40,8 +42,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   TimeOfDay selectedTime = TimeOfDay.now();
 
   // Services
-  final ApiService _apiService = ApiService();
-  final AuthService _authService = AuthService();
+  late final ApiService _apiService;
+  late final AuthService _authService;
 
   // State variables
   List<dynamic> _alumniList = [];
@@ -55,6 +57,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   @override
   void initState() {
     super.initState();
+    _apiService = widget.apiService ?? ApiService();
+    _authService = widget.authService ?? AuthService();
     _textController = TextEditingController();
     _textFieldFocusNode = FocusNode();
     _loadInitialData();
