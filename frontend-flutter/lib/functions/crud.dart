@@ -96,9 +96,15 @@ class ApiService {
   }
 
   // Previous Contacts Operations
-  Future<List<dynamic>> getPreviousContacts() async {
-    final response = await _send('GET', '/previous-contacts/');
-    if (response.statusCode == 200) return _decode(response);
+  Future<List<Map<String, dynamic>>> getPreviousContacts({
+    int? alumniId,
+  }) async {
+    final response = await _send(
+      'GET',
+      '/previous-contacts/',
+      query: alumniId == null ? null : {'alumni': '$alumniId'},
+    );
+    if (response.statusCode == 200) return _unwrapList(_decode(response));
     throw Exception("Failed to load contacts");
   }
 
@@ -108,6 +114,25 @@ class ApiService {
         await _send('POST', '/previous-contacts/', body: contactData);
     if (response.statusCode == 201) return _decode(response);
     throw Exception("Failed to create contact");
+  }
+
+  // Alumni Event Attendance Operations
+  Future<List<Map<String, dynamic>>> getAlumniEvents(int alumniId) async {
+    final response = await _send(
+      'GET',
+      '/alumni-events/',
+      query: {'alumni': '$alumniId'},
+    );
+    if (response.statusCode == 200) return _unwrapList(_decode(response));
+    throw Exception("Failed to load attended events");
+  }
+
+  Future<Map<String, dynamic>> createAlumniEvent(
+      Map<String, dynamic> attendanceData) async {
+    final response =
+        await _send('POST', '/alumni-events/', body: attendanceData);
+    if (response.statusCode == 201) return _decode(response);
+    throw Exception("Failed to record attendance");
   }
 
   // Recommended Alumni Operations

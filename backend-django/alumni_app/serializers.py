@@ -48,9 +48,11 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'date', 'time', 'description']
 
 class AlumniEventSerializer(serializers.ModelSerializer):
+    event_detail = EventSerializer(source='event', read_only=True)
+
     class Meta:
         model = AlumniEvent
-        fields = '__all__'
+        fields = ['id', 'alumni', 'event', 'event_detail', 'attendance_status', 'attended_on']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)

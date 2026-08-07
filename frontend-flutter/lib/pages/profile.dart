@@ -24,6 +24,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
   final ApiService _apiService = ApiService();
   Map<String, dynamic> userData = {};
 
+  List<dynamic> _attendedEvents = [];
+  bool _eventsLoading = true;
+  List<dynamic> _previousContacts = [];
+  bool _contactsLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +83,158 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
         });
       }
     }
+  }
+
+  Future<void> _loadAttendedEvents() async {
+    try {
+      final events =
+          await _apiService.getAlumniEvents(int.parse(widget.userId.toString()));
+      if (!mounted) return;
+      setState(() {
+        _attendedEvents = events;
+        _eventsLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(context, 'Error loading attended events: $e',
+          isError: true);
+      setState(() => _eventsLoading = false);
+    }
+  }
+
+  Future<void> _loadPreviousContacts() async {
+    try {
+      final contacts = await _apiService.getPreviousContacts(
+        alumniId: int.parse(widget.userId.toString()),
+      );
+      if (!mounted) return;
+      setState(() {
+        _previousContacts = contacts;
+        _contactsLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(context, 'Error loading previous contacts: $e',
+          isError: true);
+      setState(() => _contactsLoading = false);
+    }
+  }
+
+  void _showMarkAttendedDialog() async {
+    List<Map<String, dynamic>> events;
+    try {
+      events = await _apiService.getEventsList();
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(context, 'Error loading events: $e', isError: true);
+      return;
+    }
+    if (!mounted) return;
+
+    Map<String, dynamic>? selectedEvent;
+    DateTime attendedOn = DateTime.now();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => FormDialog(
+          title: 'Mark Attended',
+          submitText: 'Save',
+          fields: [
+            AppDropdownFormField<Map<String, dynamic>>(
+              value: selectedEvent,
+              labelText: 'Event',
+              items: events,
+              itemLabel: (event) => '${event['name']} (${event['date']})',
+              onChanged: (value) =>
+                  setDialogState(() => selectedEvent = value),
+            ),
+            DatePickerFormField(
+              selectedDate: attendedOn,
+              labelText: 'Attended On',
+              firstDate: DateTime(2000),
+              onDateSelected: (date) =>
+                  setDialogState(() => attendedOn = date),
+            ),
+          ],
+          onSubmit: () async {
+            if (selectedEvent == null) {
+              AppSnackBar.show(dialogContext, 'Please select an event',
+                  isError: true);
+              return;
+            }
+            try {
+              await _apiService.createAlumniEvent({
+                'alumni': int.parse(widget.userId.toString()),
+                'event': selectedEvent!['id'],
+                'attendance_status': true,
+                'attended_on': attendedOn.toIso8601String(),
+              });
+              if (!dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
+              await _loadAttendedEvents();
+            } catch (e) {
+              if (!dialogContext.mounted) return;
+              AppSnackBar.show(
+                  dialogContext, 'Failed to record attendance: $e',
+                  isError: true);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showLogContactDialog() {
+    final modeController = TextEditingController();
+    final descriptionController = TextEditingController();
+    DateTime contactDate = DateTime.now();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => FormDialog(
+          title: 'Log Contact',
+          submitText: 'Save',
+          fields: [
+            CustomTextFormField(
+              controller: modeController,
+              labelText: 'Mode of Contact',
+            ),
+            DatePickerFormField(
+              selectedDate: contactDate,
+              labelText: 'Date',
+              firstDate: DateTime(2000),
+              onDateSelected: (date) =>
+                  setDialogState(() => contactDate = date),
+            ),
+            CustomTextFormField(
+              controller: descriptionController,
+              labelText: 'Description',
+              maxLines: 3,
+            ),
+          ],
+          onSubmit: () async {
+            try {
+              await _apiService.createContact({
+                'alumni': int.parse(widget.userId.toString()),
+                'date':
+                    '${contactDate.year}-${contactDate.month.toString().padLeft(2, '0')}-${contactDate.day.toString().padLeft(2, '0')}',
+                'mode_of_contact': modeController.text,
+                'description': descriptionController.text,
+              });
+              if (!dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
+              await _loadPreviousContacts();
+            } catch (e) {
+              if (!dialogContext.mounted) return;
+              AppSnackBar.show(dialogContext, 'Failed to log contact: $e',
+                  isError: true);
+            }
+          },
+        ),
+      ),
+    );
   }
 
   void _confirmDelete() {
@@ -314,8 +471,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
                                               onTap: (i) async {
                                                 [
                                                   () async {},
-                                                  () async {},
-                                                  () async {},
+                                                  _loadAttendedEvents,
+                                                  _loadPreviousContacts,
                                                 ][i]();
                                               },
                                             ),
@@ -377,42 +534,125 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
   }
 
   Widget _buildActivityTab(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      primary: false,
-      shrinkWrap: true,
-      scrollDirection: Axis.vertical,
+    return Column(
       children: [
-        _buildActivityItem(
-          context,
-          '4 hour session',
-          'Scene Setup 101',
-          '\$500',
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Events Attended',
+                  style: Theme.of(context).textTheme.titleMedium),
+              TextButton.icon(
+                onPressed: _showMarkAttendedDialog,
+                icon: const Icon(Icons.add),
+                label: const Text('Mark Attended'),
+              ),
+            ],
+          ),
         ),
-        _buildActivityItem(
-          context,
-          '2 Week Intensive',
-          'Adventure Photography',
-          '\$2,000',
+        Expanded(
+          child: AsyncListView<dynamic>(
+            isLoading: _eventsLoading,
+            items: _attendedEvents,
+            emptyText: 'No events attended yet',
+            itemBuilder: (context, item) => _buildAttendedEventCard(item),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildContactTab(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      primary: false,
-      shrinkWrap: true,
-      scrollDirection: Axis.vertical,
+    return Column(
       children: [
-        _buildActivityItem(
-          context,
-          'Alumni S.O.C poc',
-          'Alumni name',
-          'Alumni email',
-        )
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Previous Contacts',
+                  style: Theme.of(context).textTheme.titleMedium),
+              TextButton.icon(
+                onPressed: _showLogContactDialog,
+                icon: const Icon(Icons.add),
+                label: const Text('Log Contact'),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: AsyncListView<dynamic>(
+            isLoading: _contactsLoading,
+            items: _previousContacts,
+            emptyText: 'No previous contacts logged yet',
+            itemBuilder: (context, item) => _buildContactCard(item),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildAttendedEventCard(Map<String, dynamic> attendance) {
+    final event = attendance['event_detail'] as Map<String, dynamic>?;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
+      child: AppCard(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              event?['name'] ?? 'Unknown Event',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'Plus Jakarta Sans',
+                    letterSpacing: 0.0,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Event date: ${event?['date'] ?? 'Unknown'}',
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+            Text(
+              'Attended on: ${attendance['attended_on'] ?? 'Unknown'}',
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactCard(Map<String, dynamic> contact) {
+    final contactedBy = contact['contacted_by'] as Map<String, dynamic>?;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
+      child: AppCard(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              contact['mode_of_contact'] ?? 'Unknown',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontFamily: 'Plus Jakarta Sans',
+                    letterSpacing: 0.0,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              contact['description'] ?? '',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${contact['date'] ?? ''} · Contacted by: ${contactedBy?['username'] ?? 'Unknown'}',
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -490,53 +730,4 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
     );
   }
 
-  Widget _buildActivityItem(
-    BuildContext context,
-    String duration,
-    String title,
-    String price,
-  ) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  duration,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontFamily: 'Plus Jakarta Sans',
-                        color: Theme.of(context).colorScheme.primary,
-                        letterSpacing: 0.0,
-                      ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 8),
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontFamily: 'Outfit',
-                          letterSpacing: 0.0,
-                        ),
-                  ),
-                ),
-                Text(
-                  price,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontFamily: 'Outfit',
-                        letterSpacing: 0.0,
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

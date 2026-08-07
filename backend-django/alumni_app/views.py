@@ -289,8 +289,23 @@ class PreviousContactViewSet(viewsets.ModelViewSet):
         # Filter contacts based on search parameters
         queryset = PreviousContact.objects.all()
         alumni_id = self.request.query_params.get('alumni', None)
-        
+
         if alumni_id:
             queryset = queryset.filter(alumni_id=alumni_id)
-        
+
         return queryset.order_by('-date')  # Most recent contacts first
+
+# CRUD for AlumniEvent (attendance)
+class AlumniEventViewSet(viewsets.ModelViewSet):
+    queryset = AlumniEvent.objects.all()
+    serializer_class = AlumniEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = AlumniEvent.objects.all()
+        alumni_id = self.request.query_params.get('alumni', None)
+
+        if alumni_id:
+            queryset = queryset.filter(alumni_id=alumni_id)
+
+        return queryset.order_by('-attended_on')  # Most recent attendance first

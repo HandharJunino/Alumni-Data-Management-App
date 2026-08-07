@@ -1,14 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    AlumniListCreateView, 
-    AlumniDetailView, 
-    EventListCreateView, 
-    EventDetailView, 
-    RegisterView, 
-    CustomTokenObtainPairView, 
+    AlumniListCreateView,
+    AlumniDetailView,
+    EventListCreateView,
+    EventDetailView,
+    RegisterView,
+    CustomTokenObtainPairView,
     ForgotPasswordView,
     PreviousContactViewSet,
+    AlumniEventViewSet,
     RecommendedAlumniViewSet,
     LogoutView,
     home_view
@@ -18,6 +19,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 # Create a router for ViewSets
 router = DefaultRouter()
 router.register(r'previous-contacts', PreviousContactViewSet, basename='previous-contact')
+router.register(r'alumni-events', AlumniEventViewSet, basename='alumni-event')
 router.register(r'recommended-alumni', RecommendedAlumniViewSet, basename='recommended-alumni')
 
 urlpatterns = [
