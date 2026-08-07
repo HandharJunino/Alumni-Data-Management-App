@@ -65,6 +65,11 @@ local_settings.py
 
 # Flutter specific (Frontend)
 **/build/
+# Netlify serves straight from this directory in git - see
+# .github/workflows/frontend-ci.yml
+!frontend-flutter/build/
+frontend-flutter/build/*
+!frontend-flutter/build/web/
 **/.dart_tool/
 **/.flutter-plugins
 **/.flutter-plugins-dependencies

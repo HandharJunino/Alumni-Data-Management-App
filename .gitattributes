@@ -1,0 +1,3 @@
+# Flutter web build output is committed for Netlify to serve directly -
+# keep it exactly as the build produces it, no line-ending conversion.
+frontend-flutter/build/web/** -text
