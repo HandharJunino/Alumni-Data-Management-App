@@ -15,6 +15,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
     with TickerProviderStateMixin {
   late AuthPageModel _model;
   late final AuthService _authService;
+  bool _isSigningIn = false;
+  bool _isCreatingAccount = false;
 
   @override
   void initState() {
@@ -211,36 +213,41 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () async {
-                if (_model.emailAddressTextController.text.isEmpty ||
-                    _model.passwordTextController.text.isEmpty) {
-                  AppSnackBar.show(
-                      context, 'Please enter both email and password',
-                      isError: true);
-                  return; // Stop execution if fields are empty
-                }
+              onPressed: _isSigningIn
+                  ? null
+                  : () async {
+                      if (_model.emailAddressTextController.text.isEmpty ||
+                          _model.passwordTextController.text.isEmpty) {
+                        AppSnackBar.show(
+                            context, 'Please enter both email and password',
+                            isError: true);
+                        return; // Stop execution if fields are empty
+                      }
 
-                try {
-                  // Call the login function
-                  String? error = await _authService.loginUser(
-                    _model.emailAddressTextController.text,
-                    _model.passwordTextController.text,
-                  );
+                      setState(() => _isSigningIn = true);
+                      try {
+                        // Call the login function
+                        String? error = await _authService.loginUser(
+                          _model.emailAddressTextController.text,
+                          _model.passwordTextController.text,
+                        );
 
-                  if (!mounted) return;
-                  if (error == null) {
-                    // Login successful, navigate to home
-                    Navigator.pushNamed(context, '/home');
-                  } else {
-                    AppSnackBar.show(context, error, isError: true);
-                  }
-                } catch (e) {
-                  if (!mounted) return;
-                  AppSnackBar.show(
-                      context, 'An error occurred: ${e.toString()}',
-                      isError: true);
-                }
-              },
+                        if (!mounted) return;
+                        if (error == null) {
+                          // Login successful, navigate to home
+                          Navigator.pushNamed(context, '/home');
+                        } else {
+                          AppSnackBar.show(context, error, isError: true);
+                        }
+                      } catch (e) {
+                        if (!mounted) return;
+                        AppSnackBar.show(
+                            context, 'An error occurred: ${e.toString()}',
+                            isError: true);
+                      } finally {
+                        if (mounted) setState(() => _isSigningIn = false);
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 padding:
@@ -249,13 +256,22 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                   borderRadius: BorderRadius.circular(40),
                 ),
               ),
-              child: Text(
-                'Sign In',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      letterSpacing: 0.0,
+              child: _isSigningIn
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Sign In',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: Colors.white,
+                            letterSpacing: 0.0,
+                          ),
                     ),
-              ),
             ),
             const SizedBox(height: 16),
             TextButton(
@@ -410,52 +426,66 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () async {
-                if (_model.userNameTextController.text.isEmpty) {
-                  AppSnackBar.show(context, 'Username cannot be empty!',
-                      isError: true);
-                  return;
-                }
-                if (_model.emailAddressCreateTextController.text.isEmpty) {
-                  AppSnackBar.show(context, 'Email cannot be empty!',
-                      isError: true);
-                  return;
-                }
-                if (_model.passwordCreateTextController.text.isEmpty) {
-                  AppSnackBar.show(context, 'Password cannot be empty!',
-                      isError: true);
-                  return;
-                }
-                if (_model.passwordConfirmTextController.text.isEmpty) {
-                  AppSnackBar.show(
-                      context, 'Confirm Password cannot be empty!',
-                      isError: true);
-                  return;
-                }
-                if (_model.passwordCreateTextController.text !=
-                    _model.passwordConfirmTextController.text) {
-                  AppSnackBar.show(context, 'Passwords don\'t match!',
-                      isError: true);
-                  return;
-                }
-                try {
-                  String? errorMessage = await _authService.registerUser(
-                    _model.userNameTextController.text,
-                    _model.emailAddressCreateTextController.text,
-                    _model.passwordCreateTextController.text,
-                    _model.passwordConfirmTextController.text,
-                  );
-                  if (!mounted) return;
-                  if (errorMessage == null) {
-                    Navigator.pushNamed(context, '/home');
-                  } else {
-                    AppSnackBar.show(context, errorMessage, isError: true);
-                  }
-                } catch (e) {
-                  if (!mounted) return;
-                  AppSnackBar.show(context, e.toString(), isError: true);
-                }
-              },
+              onPressed: _isCreatingAccount
+                  ? null
+                  : () async {
+                      if (_model.userNameTextController.text.isEmpty) {
+                        AppSnackBar.show(
+                            context, 'Username cannot be empty!',
+                            isError: true);
+                        return;
+                      }
+                      if (_model
+                          .emailAddressCreateTextController.text.isEmpty) {
+                        AppSnackBar.show(context, 'Email cannot be empty!',
+                            isError: true);
+                        return;
+                      }
+                      if (_model
+                          .passwordCreateTextController.text.isEmpty) {
+                        AppSnackBar.show(context, 'Password cannot be empty!',
+                            isError: true);
+                        return;
+                      }
+                      if (_model
+                          .passwordConfirmTextController.text.isEmpty) {
+                        AppSnackBar.show(
+                            context, 'Confirm Password cannot be empty!',
+                            isError: true);
+                        return;
+                      }
+                      if (_model.passwordCreateTextController.text !=
+                          _model.passwordConfirmTextController.text) {
+                        AppSnackBar.show(context, 'Passwords don\'t match!',
+                            isError: true);
+                        return;
+                      }
+
+                      setState(() => _isCreatingAccount = true);
+                      try {
+                        String? errorMessage = await _authService.registerUser(
+                          _model.userNameTextController.text,
+                          _model.emailAddressCreateTextController.text,
+                          _model.passwordCreateTextController.text,
+                          _model.passwordConfirmTextController.text,
+                        );
+                        if (!mounted) return;
+                        if (errorMessage == null) {
+                          Navigator.pushNamed(context, '/home');
+                        } else {
+                          AppSnackBar.show(context, errorMessage,
+                              isError: true);
+                        }
+                      } catch (e) {
+                        if (!mounted) return;
+                        AppSnackBar.show(context, e.toString(),
+                            isError: true);
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isCreatingAccount = false);
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 padding:
@@ -464,13 +494,22 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                   borderRadius: BorderRadius.circular(40),
                 ),
               ),
-              child: Text(
-                'Create Account',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      letterSpacing: 0.0,
+              child: _isCreatingAccount
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Create Account',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: Colors.white,
+                            letterSpacing: 0.0,
+                          ),
                     ),
-              ),
             ),
           ],
         ),
