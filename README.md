@@ -5,6 +5,13 @@
 
 Design and Development of a Web Application for Alumni Data Management.
 
+## 🌐 Live Demo
+
+- **Frontend**: [alumni-data-management-app.netlify.app](https://alumni-data-management-app.netlify.app/)
+- **Backend API**: [alumni-data-management-app.onrender.com](https://alumni-data-management-app.onrender.com)
+
+> The backend is on Render's free tier, which sleeps after inactivity - the first request after a period of idle can take up to a minute to wake up.
+
 ## 📋 Project Overview
 
 This is a full-stack web application designed to manage alumni data efficiently. The system allows administrators to track alumni information, manage events, and maintain contact records.
@@ -149,7 +156,7 @@ See [backend-django/SETUP.md](backend-django/SETUP.md) for full details. Short v
    flutter run -d chrome
    ```
 
-   The web app will be available at the local URL Flutter prints in the terminal. Note: `ApiService`/`AuthService` currently point at a hardcoded `http://127.0.0.1:8000/api` — the backend must be running locally on port 8000.
+   The web app will be available at the local URL Flutter prints in the terminal. Note: `ApiService`/`AuthService` currently point at the deployed Render backend (`https://alumni-data-management-app.onrender.com/api`) — to hit a local Django server instead, change `baseUrl` in [lib/functions/crud.dart](frontend-flutter/lib/functions/crud.dart) and [lib/functions/authentication.dart](frontend-flutter/lib/functions/authentication.dart) to `http://127.0.0.1:8000/api`.
 
 ## 🔧 API Endpoints
 
@@ -261,16 +268,11 @@ flutter test
 
 ## 🚀 Deployment
 
-### Backend Deployment
-1. Set up PostgreSQL database
-2. Configure environment variables
-3. Run migrations: `python manage.py migrate`
-4. Collect static files: `python manage.py collectstatic`
-5. Deploy using your preferred platform (Heroku, AWS, etc.)
+- **Database**: [Neon](https://neon.tech) (serverless PostgreSQL)
+- **Backend**: [Render](https://render.com), reading `DATABASE_URL` from Neon; migrations and `collectstatic` run as part of the Render build step
+- **Frontend**: [Netlify](https://netlify.com), serving `frontend-flutter/build/web` directly from git with no build step of its own
 
-### Frontend Deployment
-1. Build for web: `flutter build web`
-2. Deploy the `build/web` directory to your web server
+The frontend build is produced and committed automatically: [.github/workflows/frontend-ci.yml](.github/workflows/frontend-ci.yml) runs `flutter build web --release` on every push to `main` (after tests pass) and pushes the output back to `frontend-flutter/build/web`, which Netlify then serves.
 
 ## 🤝 Contributing
 
