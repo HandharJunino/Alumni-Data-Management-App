@@ -2,6 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+/// Shared alumni "Availability" options, used by both the Add Member dialog
+/// and the edit alumni form.
+const availabilityOptions = ['In-person', 'Online', 'Unavailable'];
+
+/// Shared alumni "Area of Expertise" options, used by both the Add Member
+/// dialog and the edit alumni form.
+const expertiseOptions = [
+  'AI & ML',
+  'Cloud Computing',
+  'Cyber Security',
+  'Data Science',
+  'Web Development',
+  'Mobile Development',
+  'Blockchain',
+  'DevOps',
+  'Networking',
+  'Internet of Things',
+];
+
 class CustomTextFormField extends StatelessWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
@@ -318,6 +337,8 @@ class AppDropdownFormField<T> extends StatelessWidget {
   final List<T> items;
   final String Function(T item) itemLabel;
   final ValueChanged<T?> onChanged;
+  final Color? fillColor;
+  final Color? borderColor;
 
   const AppDropdownFormField({
     super.key,
@@ -326,6 +347,8 @@ class AppDropdownFormField<T> extends StatelessWidget {
     required this.items,
     required this.itemLabel,
     required this.onChanged,
+    this.fillColor,
+    this.borderColor,
   });
 
   @override
@@ -334,7 +357,13 @@ class AppDropdownFormField<T> extends StatelessWidget {
       value: value,
       decoration: InputDecoration(
         labelText: labelText,
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderSide: borderColor == null
+              ? const BorderSide()
+              : BorderSide(color: borderColor!, width: 2),
+        ),
+        filled: fillColor != null,
+        fillColor: fillColor,
       ),
       items: items
           .map((item) => DropdownMenuItem<T>(
@@ -343,6 +372,54 @@ class AppDropdownFormField<T> extends StatelessWidget {
               ))
           .toList(),
       onChanged: onChanged,
+    );
+  }
+}
+
+/// A labeled [Wrap] of toggleable [FilterChip]s for selecting zero or more
+/// values from a fixed option list (e.g. "Area of Expertise").
+class AppMultiSelectChips extends StatelessWidget {
+  final String labelText;
+  final List<String> options;
+  final List<String> selected;
+  final ValueChanged<List<String>> onChanged;
+
+  const AppMultiSelectChips({
+    super.key,
+    required this.labelText,
+    required this.options,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(labelText, style: Theme.of(context).textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((option) {
+            final isSelected = selected.contains(option);
+            return FilterChip(
+              label: Text(option),
+              selected: isSelected,
+              onSelected: (value) {
+                final updated = List<String>.from(selected);
+                if (value) {
+                  updated.add(option);
+                } else {
+                  updated.remove(option);
+                }
+                onChanged(updated);
+              },
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

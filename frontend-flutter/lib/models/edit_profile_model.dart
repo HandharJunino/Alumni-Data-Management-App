@@ -28,37 +28,73 @@ class FormListFieldController<T> extends FormFieldController<List<T>> {
 class EditProfileModel extends FlutterFlowModel<EditProfileWidget> {
   ///  State fields for stateful widgets in this page.
 
-  // State field(s) for yourName widget.
-  FocusNode? yourNameFocusNode;
-  TextEditingController? yourNameTextController;
-  String? Function(String?)? yourNameTextControllerValidator;
+  // State field(s) for name widget.
+  FocusNode? nameFocusNode;
+  TextEditingController? nameTextController;
+  String? Function(String?)? nameTextControllerValidator;
 
-  // State field(s) for city widget.
-  FocusNode? cityFocusNode;
-  TextEditingController? cityTextController;
-  String? Function(String?)? cityTextControllerValidator;
+  // State field(s) for phone widget.
+  FocusNode? phoneFocusNode;
+  TextEditingController? phoneTextController;
+  String? Function(String?)? phoneTextControllerValidator;
 
-  // State field(s) for state widget.
-  String? stateValue;
-  FormFieldController<String>? stateValueController;
+  // State field(s) for email widget.
+  FocusNode? emailFocusNode;
+  TextEditingController? emailTextController;
+  String? Function(String?)? emailTextControllerValidator;
 
-  // State field(s) for myBio widget.
-  FocusNode? myBioFocusNode;
-  TextEditingController? myBioTextController;
-  String? Function(String?)? myBioTextControllerValidator;
+  // State field(s) for socPoc widget.
+  FocusNode? socPocFocusNode;
+  TextEditingController? socPocTextController;
+  String? Function(String?)? socPocTextControllerValidator;
+
+  // State field(s) for country widget.
+  FocusNode? countryFocusNode;
+  TextEditingController? countryTextController;
+  String? Function(String?)? countryTextControllerValidator;
+
+  // State field(s) for priorCourse widget.
+  FocusNode? priorCourseFocusNode;
+  TextEditingController? priorCourseTextController;
+  String? Function(String?)? priorCourseTextControllerValidator;
+
+  // State field(s) for yearOfGraduation widget.
+  FocusNode? yearOfGraduationFocusNode;
+  TextEditingController? yearOfGraduationTextController;
+  String? Function(String?)? yearOfGraduationTextControllerValidator;
+
+  // State field(s) for company widget.
+  FocusNode? companyFocusNode;
+  TextEditingController? companyTextController;
+  String? Function(String?)? companyTextControllerValidator;
 
   @override
   void initState(BuildContext context) {}
 
   @override
   void dispose() {
-    yourNameFocusNode?.dispose();
-    yourNameTextController?.dispose();
+    nameFocusNode?.dispose();
+    nameTextController?.dispose();
 
-    cityFocusNode?.dispose();
-    cityTextController?.dispose();
+    phoneFocusNode?.dispose();
+    phoneTextController?.dispose();
 
-    myBioFocusNode?.dispose();
-    myBioTextController?.dispose();
+    emailFocusNode?.dispose();
+    emailTextController?.dispose();
+
+    socPocFocusNode?.dispose();
+    socPocTextController?.dispose();
+
+    countryFocusNode?.dispose();
+    countryTextController?.dispose();
+
+    priorCourseFocusNode?.dispose();
+    priorCourseTextController?.dispose();
+
+    yearOfGraduationFocusNode?.dispose();
+    yearOfGraduationTextController?.dispose();
+
+    companyFocusNode?.dispose();
+    companyTextController?.dispose();
   }
 }

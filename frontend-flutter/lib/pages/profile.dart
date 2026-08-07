@@ -80,6 +80,34 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
     }
   }
 
+  void _confirmDelete() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => FormDialog(
+        title: 'Delete Alumni',
+        submitText: 'Delete',
+        fields: [
+          Text(
+            'Are you sure you want to delete ${userData['name'] ?? 'this alumni'}? This cannot be undone.',
+          ),
+        ],
+        onSubmit: () async {
+          try {
+            await _apiService.deleteAlumni(int.parse(widget.userId.toString()));
+            if (!dialogContext.mounted) return;
+            Navigator.pop(dialogContext);
+            if (!mounted) return;
+            Navigator.pop(context, true);
+          } catch (e) {
+            if (!dialogContext.mounted) return;
+            AppSnackBar.show(dialogContext, 'Failed to delete alumni: $e',
+                isError: true);
+          }
+        },
+      ),
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -128,7 +156,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
                       ShadowIconButton(
                         icon: Icons.edit,
                         onPressed: () {
-                          Navigator.pushNamed(context, '/edit_profile');
+                          Navigator.pushNamed(
+                            context,
+                            '/edit_profile',
+                            arguments: {'userId': widget.userId.toString()},
+                          );
                         },
                       ),
                     ],
@@ -214,74 +246,29 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
                                             ),
                                           ],
                                         ),
-                                        Stack(
-                                          children: [
-                                            /*ElevatedButton(
-                                              onPressed: () {
-                                                print('Following pressed ...');
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Theme.of(context)
-                                                    .colorScheme
-                                                    .surface,
-                                                padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 16,
-                                                    vertical: 8),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
+                                        ElevatedButton(
+                                          onPressed: () => _confirmDelete(),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
                                                   BorderRadius.circular(12),
-                                                  side: BorderSide(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .outline,
-                                                    width: 1,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Text(
-                                                'Following',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleSmall
-                                                    ?.copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Delete User',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleSmall
+                                                ?.copyWith(
+                                                  color: Colors.white,
                                                   letterSpacing: 0.0,
                                                 ),
-                                              ),
-                                            ),*/
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                print('Follow pressed ...');
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .primary,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 8),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                              ),
-                                              child: Text(
-                                                'Follow',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleSmall
-                                                    ?.copyWith(
-                                                      color: Colors.white,
-                                                      letterSpacing: 0.0,
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
                                       ],
                                     ),

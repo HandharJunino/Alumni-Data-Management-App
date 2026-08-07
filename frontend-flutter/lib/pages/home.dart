@@ -8,20 +8,6 @@ import '../functions/crud.dart';
 import 'package:provider/provider.dart';
 import 'package:alumni_app/theme_notifier.dart';
 
-const _availabilityOptions = ['In-person', 'Online', 'Unavailable'];
-const _expertiseOptions = [
-  'AI & ML',
-  'Cloud Computing',
-  'Cyber Security',
-  'Data Science',
-  'Web Development',
-  'Mobile Development',
-  'Blockchain',
-  'DevOps',
-  'Networking',
-  'Internet of Things',
-];
-
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
 
@@ -213,15 +199,18 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       emptyText: 'No alumni found',
       itemBuilder: (context, alumni) => AlumniListItem(
         alumni: alumni,
-        onView: () => Navigator.pushNamed(
-          context,
-          '/user_profile',
-          arguments: {'userId': alumni['id']},
-        ),
+        onView: () async {
+          final deleted = await Navigator.pushNamed(
+            context,
+            '/user_profile',
+            arguments: {'userId': alumni['id']},
+          );
+          if (deleted == true) _loadAlumni();
+        },
         onEdit: () => Navigator.pushNamed(
           context,
           '/edit_profile',
-          arguments: {'userId': alumni['id']},
+          arguments: {'userId': alumni['id'].toString()},
         ),
       ),
     );
@@ -249,7 +238,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
           AppDropdownFormField<String>(
             value: _availability,
             labelText: 'Availability',
-            items: _availabilityOptions,
+            items: availabilityOptions,
             itemLabel: (item) => item,
             onChanged: (value) => setState(() => _availability = value),
           ),
@@ -285,7 +274,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
           AppDropdownFormField<String>(
             value: _expertise,
             labelText: 'Area of Expertise',
-            items: _expertiseOptions,
+            items: expertiseOptions,
             itemLabel: (item) => item,
             onChanged: (value) => setState(() => _expertise = value),
           ),
@@ -293,7 +282,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         onSubmit: () async {
           final alumniData = {
             'name': nameController.text,
-            'phone': phoneController.text,
+            'phone': phoneController.text.replaceAll(RegExp(r'[^0-9]'), ''),
             'email': emailController.text,
             'soc_poc': socController.text,
             'availability': _availability ?? '',
