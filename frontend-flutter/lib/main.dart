@@ -7,8 +7,6 @@ import 'package:alumni_app/pages/auth.dart';
 import 'package:provider/provider.dart';
 import 'package:alumni_app/theme_notifier.dart';
 
-const String base_url = "http://127.0.0.1:8000/api/";
-
 void main() {
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);

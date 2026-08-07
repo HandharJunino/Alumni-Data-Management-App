@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 
 # Create your views here.
@@ -154,16 +154,15 @@ class RecommendedAlumniViewSet(viewsets.ModelViewSet):
         if not event_id:
             return Alumni.objects.none()
 
-        # Get event details
-        event = Event.objects.get(id=event_id)
+        # Confirm the event exists (404s cleanly otherwise)
+        get_object_or_404(Event, id=event_id)
 
-        # Find alumni with expertise matching the event's area of interest
-        matching_alumni = Alumni.objects.filter(area_of_expertise=event.area_of_interest)
-
-        # Prioritize alumni with previous event attendance
-        recommended_alumni = matching_alumni.annotate(events_attended=Count('alumnievent')).order_by('-events_attended')
-
-        return recommended_alumni
+        # Event no longer has an area_of_interest field to match against
+        # (removed in migration 0009), so recommend alumni prioritized by
+        # how many events they've previously attended.
+        return Alumni.objects.annotate(
+            events_attended=Count('alumnievent')
+        ).order_by('-events_attended')
 
 # Register New Users
 class RegisterView(generics.CreateAPIView):

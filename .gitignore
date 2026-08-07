@@ -18,6 +18,7 @@ Thumbs.db
 .project
 .classpath
 .settings/
+.claude/
 
 # Logs
 *.log

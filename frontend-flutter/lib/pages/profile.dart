@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:alumni_app/models/profile_model.dart';
-import 'package:alumni_app/animations.dart';
 import 'package:alumni_app/functions/crud.dart';
 import 'package:alumni_app/components.dart';
 
@@ -18,8 +16,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
   late UserProfileModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final animationsMap = <String, AnimationInfo>{};
 
   final ApiService _apiService = ApiService();
   Map<String, dynamic> userData = {};
@@ -39,49 +35,16 @@ class _UserProfileWidgetState extends State<UserProfileWidget>
       length: 3,
       initialIndex: 0,
     )..addListener(() => setState(() {}));
-
-    animationsMap.addAll({
-      'containerOnPageLoadAnimation': AnimationInfo(
-        trigger: AnimationTrigger.onPageLoad,
-        effectsBuilder: () => [
-          FadeEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: 0.0,
-            end: 1.0,
-          ),
-          MoveEffect(
-            curve: Curves.easeInOut,
-            delay: 0.0.ms,
-            duration: 600.0.ms,
-            begin: const Offset(0.0, 80.0),
-            end: const Offset(0.0, 0.0),
-          ),
-        ],
-      ),
-    });
   }
 
   Future<void> _loadUserData() async {
     try {
       final data = await _apiService.getUserDetails(widget.userId.toString());
-      if (mounted) {
-        setState(() {
-          userData = data;
-          print('Loaded user data: $userData');
-        });
-      }
+      if (!mounted) return;
+      setState(() => userData = data);
     } catch (e) {
-      print('Error loading user data: $e');
-      if (mounted) {
-        // Use post-frame callback for showing SnackBar
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error loading user data: $e')),
-          );
-        });
-      }
+      if (!mounted) return;
+      AppSnackBar.show(context, 'Error loading user data: $e', isError: true);
     }
   }
 

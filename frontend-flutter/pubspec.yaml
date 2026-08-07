@@ -36,11 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   easy_debounce: ^2.0.3
   font_awesome_flutter: ^10.1.0
-  auto_size_text: ^3.0.0
-  collection: ^1.19.0
   provider: ^6.1.2
-  foundation: ^0.0.5
-  flutter_animate: ^4.5.2
   http: ^1.3.0
   flutter_secure_storage: ^9.2.4
   shared_preferences: ^2.2.2

@@ -9,7 +9,7 @@ This is a full-stack web application designed to manage alumni data efficiently.
 **Tech Stack:**
 - **Backend**: Django REST Framework with Python
 - **Frontend**: Flutter Web Application
-- **Database**: SQLite (Development) / PostgreSQL (Production)
+- **Database**: PostgreSQL
 - **Authentication**: JWT Token-based Authentication
 
 ## 🏗️ Project Structure
@@ -77,9 +77,11 @@ Make sure you have the following installed:
 - **Python 3.8+**
 - **Flutter SDK 3.6.1+**
 - **Git**
-- **PostgreSQL** (for production) or **SQLite** (for development)
+- **PostgreSQL** (required — the `area_of_expertise` field uses a Postgres-only array type, so SQLite will not work)
 
 ### Backend Setup (Django)
+
+See [backend-django/SETUP.md](backend-django/SETUP.md) for full details. Short version:
 
 1. **Navigate to backend directory**
    ```bash
@@ -89,12 +91,12 @@ Make sure you have the following installed:
 2. **Create and activate virtual environment**
    ```bash
    # Windows
-   python -m venv .venv
-   .venv\Scripts\activate
+   python -m venv venv
+   .\venv\Scripts\activate
 
    # macOS/Linux
-   python3 -m venv .venv
-   source .venv/bin/activate
+   python3 -m venv venv
+   source venv/bin/activate
    ```
 
 3. **Install Python dependencies**
@@ -103,15 +105,13 @@ Make sure you have the following installed:
    ```
 
 4. **Set up environment variables**
+
+   Copy `.env.example` to `.env` and fill in real values (a local Postgres user/password, and a real `SECRET_KEY`):
    ```bash
-   # Create .env file with your configuration
-   # Example:
-   DEBUG=True
-   SECRET_KEY=your-secret-key-here
-   DATABASE_URL=sqlite:///db.sqlite3
+   cp .env.example .env
    ```
 
-5. **Run database migrations**
+5. **Create the Postgres database** (matching `DB_NAME`/`DB_USER` in your `.env`), then run migrations
    ```bash
    python manage.py makemigrations
    python manage.py migrate
@@ -146,18 +146,19 @@ Make sure you have the following installed:
    flutter run -d chrome
    ```
 
-   The web app will be available at `http://localhost:3000/` (or the port shown in terminal)
+   The web app will be available at the local URL Flutter prints in the terminal. Note: `ApiService`/`AuthService` currently point at a hardcoded `http://127.0.0.1:8000/api` — the backend must be running locally on port 8000.
 
 ## 🔧 API Endpoints
 
 ### Authentication
 - `POST /api/register/` - User registration
-- `POST /api/login/` - User login
-- `POST /api/logout/` - User logout
-- `POST /api/forgot-password/` - Password reset
+- `POST /api/login/` - User login (returns JWT access + refresh tokens)
+- `POST /api/token/refresh/` - Refresh an expired access token
+- `POST /api/logout/` - User logout (blacklists the refresh token)
+- `POST /api/password-reset/` - Request a password reset email
 
 ### Alumni Management
-- `GET /api/alumni/` - List all alumni (with filtering)
+- `GET /api/alumni/` - List all alumni (supports `search`, `ordering`, and field filters, e.g. `?company=...`)
 - `POST /api/alumni/` - Create new alumni
 - `GET /api/alumni/{id}/` - Get specific alumni
 - `PUT /api/alumni/{id}/` - Update alumni
@@ -170,10 +171,17 @@ Make sure you have the following installed:
 - `PUT /api/events/{id}/` - Update event
 - `DELETE /api/events/{id}/` - Delete event
 
+### Event Attendance
+- `GET /api/alumni-events/?alumni={id}` - List an alumni's event attendance history
+- `POST /api/alumni-events/` - Record an alumni's attendance at an event
+
 ### Contact History
-- `GET /api/contacts/` - List contact history
-- `POST /api/contacts/` - Record new contact
-- `GET /api/contacts/?alumni={id}` - Get contacts for specific alumni
+- `GET /api/previous-contacts/` - List contact history
+- `GET /api/previous-contacts/?alumni={id}` - Get contacts for a specific alumni (most recent first)
+- `POST /api/previous-contacts/` - Record a new contact (`contacted_by` is set automatically to the logged-in user)
+
+### Recommendations
+- `GET /api/recommended-alumni/?event_id={id}` - Alumni recommended for an event, ranked by past attendance
 
 ## 🗃️ Database Models
 
