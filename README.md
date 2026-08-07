@@ -1,5 +1,8 @@
 # 🎓 Alumni Data Management App
 
+[![Backend CI](https://github.com/HandharJunino/Alumni-Data-Management-App/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/HandharJunino/Alumni-Data-Management-App/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/HandharJunino/Alumni-Data-Management-App/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/HandharJunino/Alumni-Data-Management-App/actions/workflows/frontend-ci.yml)
+
 Design and Development of a Web Application for Alumni Data Management.
 
 ## 📋 Project Overview
