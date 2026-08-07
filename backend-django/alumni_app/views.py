@@ -190,7 +190,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             # Try to find user by username or email
             try:
                 if '@' in username:
-                    user = User.objects.get(email=username)
+                    # email isn't enforced unique, so .get() could raise
+                    # MultipleObjectsReturned - take the first match instead
+                    user = User.objects.filter(email=username).first()
+                    if user is None:
+                        raise User.DoesNotExist
                     username = user.username  # Use the username for authentication
                 else:
                     user = User.objects.get(username=username)

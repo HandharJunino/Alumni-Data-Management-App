@@ -57,7 +57,9 @@ class AuthService {
         return null; // Login successful (No error message)
       } else {
         final data = jsonDecode(response.body);
-        return data['detail'] ?? "Login failed!"; // Return API error message
+        // The backend returns errors under 'error', not 'detail' -
+        // checking 'detail' first meant real error messages never surfaced.
+        return data['error'] ?? data['detail'] ?? "Login failed!";
       }
     } catch (e) {
       return "Failed to fetch: ${e.toString()}";
